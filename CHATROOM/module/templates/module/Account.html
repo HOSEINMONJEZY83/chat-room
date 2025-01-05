@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}
+	Account
+{% endblock %}
+
+{% block content %}
+	<ul class="list-group mt-5 text-center">
+        <li class="list-group-item bg-dark border-info"><a href="{% url 'changeinformation' %}" class="text-decoration-none text-info">Change information</a></li>
+        <li class="list-group-item bg-dark border-info"><a href="{% url 'changepassword' %}" class="text-decoration-none text-info">Change password</a></li>
+      </ul>
+{% endblock %}

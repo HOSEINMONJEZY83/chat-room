@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}
+	Login
+{% endblock %}
+
+{% block content %}
+
+      <form class="form-group" method="post" action="{% url 'login' %}" id="login-form">
+        {% csrf_token %}
+        <h3 class="text-info">login form</h3>
+        <div class="form-group mt-4 text-info">
+          {{ login_form.email }}
+        </div>
+        <div class="form-group mt-4">
+            {{ login_form.password }}
+        </div>
+        <div class="form-group mt-4">
+          <button type="button" class="form-control btn btn-outline-info" onclick="checklogin()">Login</button>
+        </div>
+      </form>
+{% endblock %}
