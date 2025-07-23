@@ -8,7 +8,6 @@ __pycache__/
 
 # Django static and media
 /staticfiles/
-/media/
 *.db
 *.sqlite3
 
@@ -33,7 +32,3 @@ Thumbs.db
 
 # Cache
 *.cache
-
-# Django Migrations
-**/migrations/*.py
-!**/migrations/__init__.py
