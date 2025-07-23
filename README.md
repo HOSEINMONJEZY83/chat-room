@@ -1,30 +1,74 @@
-# chat-room
-This is a simple chat room application built using Django. This app allows users to join the chat room and communicate live. The program is designed to be easy to use and additional features can be added.
+# 🧪 Django Live Chat
 
+ A real-time chatroom built with Django framework, supporting AJAX-based live messaging. Users can send text, images, and audio messages, and each user has a profile avatar.
 
 ## Authors
 
 - [HOSEINMONJEZY83](https://www.github.com/HOSEINMONJEZY83)
 
+## 🚀 Quick Start
 
-## FAQ
+1. Clone the repository
 
-#### What is this chat room application?
+```bash
+git clone https://github.com/HOSEINMONJEZY83/chat-room.git
+cd chat-room/CHATROOM
+```
+2. Create and activate a virtual environment
 
-It is a simple chat room application built with Django that allows users to communicate in real time in a chat room.
+```bash
+python -m venv venv
+source venv/bin/activate
+```
+3. Install dependencies
 
-#### How do I create an account?
+```bash
+pip install -r requirements.txt
+```
+4. Run migrations
 
-You can create an account by going to the registration page and providing the required information. After submitting the form, you will be taken directly to the chat room page.
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+5. Run the development server
 
-#### How can I contribute to this project?
+```bash
+python manage.py runserver
+```
 
-You can contribute by forking the repository, making your changes, and submitting a pull request. We welcome contributions from the community!
+## ✨ Features
 
-#### What technologies are used in this project?
+- User registration and login system
 
-This project is built using Django for the backend, with HTML, CSS, and JavaScript for the frontend.
+- Sending text messages
 
+- Sending images (with preview in chat)
+
+- Sending audio files (with built-in audio player)
+
+- User avatars (upload and display)
+
+- Display of sender's name, avatar, and message time
+
+- AJAX-based message sending (no page reload)
+
+- Validation to prevent empty messages (text or file required)
+
+## ❓ FAQ
+
+#### 📌 What features does your project have?
+
+The project allows users to sign up, log in, and send text, image, and audio messages. Messages are updated live via AJAX
+##### 📌 How are messages displayed in the chat?
+
+Messages are displayed live using AJAX, without refreshing the page
+#### 📌 Can each user have a profile picture?
+
+Yes, users can upload a profile avatar, which is displayed in the chat
+#### 📌 What types of files can be sent?
+
+Users can send text, image, and audio files
 
 ## Feedback
 
