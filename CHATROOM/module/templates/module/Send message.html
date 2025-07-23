@@ -1,11 +1,30 @@
-
-
-    <div class="d-flex m-3 bg-secondary text-light rounded p-3">
-        <div class="me-2">
-            <img id="image" class="rounded" src="{% if mes.user.avatar %}{{ mes.user.avatar.url }}{% endif %}" alt="no image">
-        </div>
-        <div class="d-flex flex-column">
-            <h3>{% if  mes.user.first_name  %}{{ mes.user.first_name }}{% else %}{{ mes.user.username }}{% endif %} <small>{{ mes.timestamp|date:"g:i A" }}</small></h3>
-            <p class="text-break fw-bold">{{ mes.content }}</p>
-        </div>
+<div class="d-flex m-3 bg-secondary text-light rounded p-3">
+    <div class="me-2">
+        <img id="image" class="rounded" src="{% if mes.user.avatar %}{{ mes.user.avatar.url }}{% endif %}" alt="no image">
     </div>
+    <div class="d-flex flex-column">
+        <h3>
+            {% if mes.user.first_name %}
+                {{ mes.user.first_name }}
+            {% else %}
+                {{ mes.user.username }}
+            {% endif %}
+            <small>{{ mes.timestamp|date:"g:i A" }}</small>
+        </h3>
+
+        {% if mes.content %}
+            <p class="text-break fw-bold">{{ mes.content }}</p>
+        {% endif %}
+
+        {% if mes.image %}
+            <img src="{{ mes.image.url }}" alt="sent image" class="img-fluid mt-2 rounded" style="max-width: 300px;">
+        {% endif %}
+
+        {% if mes.audio %}
+            <audio controls class="mt-2">
+                <source src="{{ mes.audio.url }}">
+                Your browser does not support the audio element.
+            </audio>
+        {% endif %}
+    </div>
+</div>

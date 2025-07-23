@@ -17,8 +17,19 @@ class User(AbstractUser):
 
 class Message(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    content = models.TextField(verbose_name='Message Content',null=True)
+    content = models.TextField(verbose_name='Message Content', null=True, blank=True)
+    image = models.ImageField(upload_to='pic', null=True, blank=True)
+    audio = models.FileField(upload_to='audio', null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.first_name}: {self.content[:20]} - {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
+        if self.content:
+            preview = self.content[:20]
+        elif self.image:
+            preview = "Image"
+        elif self.audio:
+            preview = "Audio"
+        else:
+            preview = "Empty"
+        return f"{self.user.first_name}: {preview} - {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
+

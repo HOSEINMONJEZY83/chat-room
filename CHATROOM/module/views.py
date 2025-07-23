@@ -187,17 +187,43 @@ def chatroom(request):
 
 @login_required
 def sendmessage(request):
-    message = request.GET.get('article_comment')
-    if message:
-        new_comment = Message(content=message, user=request.user)
-        new_comment.save()
+    if request.method == 'POST':
+        message = request.POST.get('message', '').strip()
+        file = request.FILES.get('file')
+
+        if not message and not file:
+            return JsonResponse({
+                'status': 'invalid input',
+                'text': 'At least one message or file must be sent.',
+                'icon': 'error',
+            })
+
+        new_message = Message(user=request.user)
+
+        if message:
+            new_message.content = message
+
+        if file:
+            file_type = file.content_type
+            if file_type.startswith('image/'):
+                new_message.image = file
+            elif file_type.startswith('audio/'):
+                new_message.audio = file
+            else:
+                return JsonResponse({
+                    'status': 'invalid input',
+                    'text': 'Only image or audio formats are supported.',
+                    'icon': 'error',
+                })
+
+        new_message.save()
         context = {
-            'mes': new_comment
+            'mes': new_message
         }
         return render(request, 'module/Send message.html', context)
-    else:
-        return JsonResponse({
-            'status': 'invalid input',
-            'text': 'input should not be empty when submitting.',
-            'icon': 'error',
-        })
+
+    return JsonResponse({
+        'status': 'invalid method',
+        'text': 'Only POST requests are allowed.',
+        'icon': 'error',
+    })

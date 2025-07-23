@@ -161,28 +161,47 @@ function changepassword() {
     }
 
 
-function sendArticleComment(){
+function sendmessages() {
     var text = $('#messagetext').val();
-    $.get('/sendmessage', {
-        article_comment: text
-    }).then(res => {
-        if (res.status === 'invalid input') {
-            Swal.fire({
-                icon: res.icon,
-                title: res.status,
-                text: res.text
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    var border = document.getElementById('border');
-                    border.scrollTop = border.scrollHeight;
-                }
-            });
-        }
-        else if (res){
-            $('#border').append(res);
-            $('#messagetext').val('');
-            var border = document.getElementById('border');
-            border.scrollTop = border.scrollHeight;
+    var fileInput = $('#messagefile')[0];
+    var file = fileInput ? fileInput.files[0] : null;
+
+    var formData = new FormData();
+    formData.append('message', text);
+    if (file) {
+        formData.append('file', file);
+    }
+
+    const csrftoken = document.querySelector('[name=csrf-token]').content;
+
+    $.ajax({
+        url: '/sendmessage',
+        type: 'POST',
+        headers: { 'X-CSRFToken': csrftoken },
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(res) {
+            if (res.status === 'invalid input') {
+                Swal.fire({
+                    icon: res.icon,
+                    title: res.status,
+                    text: res.text
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        var border = document.getElementById('border');
+                        border.scrollTop = border.scrollHeight;
+                    }
+                });
+            }
+            else if (res) {
+                $('#border').append(res);
+                $('#messagetext').val('');
+                $('#messagefile').val('');
+                var border = document.getElementById('border');
+                border.scrollTop = border.scrollHeight;
+            }
         }
     });
 }
+
