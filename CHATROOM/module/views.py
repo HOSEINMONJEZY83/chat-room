@@ -82,6 +82,7 @@ def signup(request):
                 })
             else:
                 new_user = User(
+                    username=user_email,
                     first_name=user_name,
                     last_name=user_family,
                     email=user_email,
@@ -188,7 +189,8 @@ def chatroom(request):
 @login_required
 def sendmessage(request):
     if request.method == 'POST':
-        message = request.POST.get('message', '').strip()
+        message = request.POST.get('message')
+        parent_id = request.POST.get('parent_id')
         file = request.FILES.get('file')
 
         if not message and not file:
@@ -198,7 +200,14 @@ def sendmessage(request):
                 'icon': 'error',
             })
 
-        new_message = Message(user=request.user)
+        parent_message = None
+        if parent_id:
+            try:
+                parent_message = Message.objects.get(id=parent_id)
+            except Message.DoesNotExist:
+                parent_message = None
+
+        new_message = Message(user=request.user, parent_id=parent_message)
 
         if message:
             new_message.content = message
