@@ -1,0 +1,7 @@
+.reply-message {
+  background-color: #444;
+  border-left: 4px solid #0dcaf0;
+  opacity: 0.7;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
