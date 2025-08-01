@@ -17,6 +17,7 @@ class User(AbstractUser):
 
 class Message(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    parent_id = models.ForeignKey('self',on_delete=models.CASCADE,null=True,blank=True)
     content = models.TextField(verbose_name='Message Content', null=True, blank=True)
     image = models.ImageField(upload_to='pic', null=True, blank=True)
     audio = models.FileField(upload_to='audio', null=True, blank=True)
