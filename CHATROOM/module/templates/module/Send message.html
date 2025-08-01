@@ -1,30 +1,52 @@
 <div class="d-flex m-3 bg-secondary text-light rounded p-3">
     <div class="me-2">
-        <img id="image" class="rounded" src="{% if mes.user.avatar %}{{ mes.user.avatar.url }}{% endif %}" alt="no image">
+      <img id="image" class="rounded" src="{% if mes.user.avatar %}{{ mes.user.avatar.url }}{% endif %}" alt="no image" style="width: 50px; height: 50px;">
     </div>
-    <div class="d-flex flex-column">
-        <h3>
-            {% if mes.user.first_name %}
-                {{ mes.user.first_name }}
-            {% else %}
-                {{ mes.user.username }}
-            {% endif %}
-            <small>{{ mes.timestamp|date:"g:i A" }}</small>
-        </h3>
-
-        {% if mes.content %}
-            <p class="text-break fw-bold">{{ mes.content }}</p>
+    <div class="d-flex flex-column" style="width: 100%;">
+      <h3>
+        {% if mes.user.first_name %}
+          {{ mes.user.first_name }}
+        {% else %}
+          {{ mes.user.username }}
         {% endif %}
+        <small>{{ mes.timestamp|date:"g:i A" }}</small>
+        <button class="btn btn-sm btn-outline-light ms-2" onclick="get_id({{ mes.id }})">Reply</button>
+      </h3>
 
-        {% if mes.image %}
-            <img src="{{ mes.image.url }}" alt="sent image" class="img-fluid mt-2 rounded" style="max-width: 300px;">
+      {% if mes.parent_id %}
+      <div class="reply-message p-2 rounded mb-2">
+        {% if mes.parent_id.content %}
+          <small class="fw-bold text-info">{{ mes.parent_id.user.first_name }} replied:</small>
+          <p class="mb-0 text-break text-light opacity-75">{{ mes.parent_id.content }}</p>
+        {% elif mes.parent_id.image %}
+          <small class="fw-bold text-info">{{ mes.parent_id.user.first_name }} replied with an image</small>
+          <img src="{{ mes.parent_id.image.url }}" class="img-fluid rounded" style="max-width: 150px;">
+        {% elif mes.parent_id.audio %}
+          <small class="fw-bold text-info">{{ mes.parent_id.user.first_name }} replied with an audio</small>
+          <audio controls class="w-100 mt-1">
+            <source src="{{ mes.parent_id.audio.url }}">
+            Your browser does not support the audio element.
+          </audio>
+        {% else %}
+          <small class="fw-bold text-info">{{ mes.parent_id.user.first_name }} replied:</small>
+          <p class="mb-0 text-break text-light opacity-75">(No content)</p>
         {% endif %}
+      </div>
+      {% endif %}
 
-        {% if mes.audio %}
-            <audio controls class="mt-2">
-                <source src="{{ mes.audio.url }}">
-                Your browser does not support the audio element.
-            </audio>
-        {% endif %}
+      {% if mes.content %}
+        <p class="text-break fw-bold">{{ mes.content }}</p>
+      {% endif %}
+
+      {% if mes.image %}
+        <img src="{{ mes.image.url }}" class="img-fluid rounded mt-2" style="max-width: 200px;">
+      {% endif %}
+
+      {% if mes.audio %}
+        <audio controls class="mt-2" style="width: 100%;">
+          <source src="{{ mes.audio.url }}">
+          Your browser does not support the audio element.
+        </audio>
+      {% endif %}
     </div>
-</div>
+  </div>
