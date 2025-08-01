@@ -163,11 +163,13 @@ function changepassword() {
 
 function sendmessages() {
     var text = $('#messagetext').val();
+    var parent_id = $('#parent_id').val();
     var fileInput = $('#messagefile')[0];
     var file = fileInput ? fileInput.files[0] : null;
 
     var formData = new FormData();
     formData.append('message', text);
+    formData.append('parent_id', parent_id);
     if (file) {
         formData.append('file', file);
     }
@@ -198,6 +200,7 @@ function sendmessages() {
                 $('#border').append(res);
                 $('#messagetext').val('');
                 $('#messagefile').val('');
+                $('#parent_id').val('');
                 var border = document.getElementById('border');
                 border.scrollTop = border.scrollHeight;
             }
@@ -205,3 +208,6 @@ function sendmessages() {
     });
 }
 
+function get_id(id) { 
+    $("#parent_id").val(id);
+}
