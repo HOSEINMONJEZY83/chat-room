@@ -1,9 +1,9 @@
 from django.http import JsonResponse
-from django.shortcuts import render, redirect, reverse
+from django.shortcuts import render, redirect, reverse , get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout,login
 from .forms import LoginForm, RegisterForm, EditProfileModelForm, ChangePasswordForm
-from .models import User , Message
+from .models import User , Message , Report
 # Create your views here.
 
 def aboutus(request):
@@ -236,3 +236,13 @@ def sendmessage(request):
         'text': 'Only POST requests are allowed.',
         'icon': 'error',
     })
+        
+@login_required
+def report(request):
+    if request.method == "POST":
+        message_id = request.POST.get("message_id")
+        user = request.user
+        message = get_object_or_404(Message, pk=message_id)
+        Report.objects.create(reporter=user, message=message)
+        return JsonResponse({"message": "Reported successfully"})
+    return JsonResponse({"error": "Invalid request"}, status=400)
