@@ -35,7 +35,7 @@ function checklogin() {
     }
         })
     });
-    }
+}
 
 
 function checksignup() {
@@ -211,3 +211,23 @@ function sendmessages() {
 function get_id(id) { 
     $("#parent_id").val(id);
 }
+
+function report(message_id) {
+    if (!confirm("Are you sure you want to report this message?")) {
+        return;
+    }
+    const csrftoken = document.querySelector("meta[name='csrf-token']").content;
+    $.ajax({
+        url: 'report',
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrftoken },
+        data: { message_id: message_id },
+        success: function(response) {
+            alert(response.message);
+        },
+        error: function() {
+            alert(response.error);
+        }
+    });
+}
+
