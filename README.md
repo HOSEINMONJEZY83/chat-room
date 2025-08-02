@@ -55,6 +55,10 @@ python manage.py runserver
 
 - Validation to prevent empty messages (text or file required)
 
+- Ability to reply to messages
+
+- Ability to report messages
+
 ## ❓ FAQ
 
 #### 📌 What features does your project have?
