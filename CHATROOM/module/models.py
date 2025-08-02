@@ -34,3 +34,10 @@ class Message(models.Model):
             preview = "Empty"
         return f"{self.user.first_name}: {preview} - {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
 
+class Report(models.Model):
+    reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reports_made')
+    message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='reports_received')
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Report by {self.reporter} on message {self.message.id} at {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
