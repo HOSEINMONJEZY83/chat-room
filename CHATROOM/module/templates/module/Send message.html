@@ -11,6 +11,7 @@
         {% endif %}
         <small>{{ mes.timestamp|date:"g:i A" }}</small>
         <button class="btn btn-sm btn-outline-light ms-2" onclick="get_id({{ mes.id }})">Reply</button>
+        <a style="cursor: pointer;" class="ms-2 text-danger text-decoration-none" title="Report this message" onclick="report({{ mes.id }})">🚩</a>
       </h3>
 
       {% if mes.parent_id %}
