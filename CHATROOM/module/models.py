@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from jalali_date import datetime2jalali
 from django.db import models
 # Create your models here.
 
@@ -22,6 +23,9 @@ class Message(models.Model):
     image = models.ImageField(upload_to='pic', null=True, blank=True)
     audio = models.FileField(upload_to='audio', null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+    
+    def jalali_date_time(self):
+        return datetime2jalali(self.timestamp).strftime('%Y/%m/%d - %H:%M')
 
     def __str__(self):
         if self.content:
@@ -32,7 +36,7 @@ class Message(models.Model):
             preview = "Audio"
         else:
             preview = "Empty"
-        return f"{self.user.first_name}: {preview} - {self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
+        return f"{self.user.first_name}: {preview} - {self.jalali_date_time()}"
 
 class Report(models.Model):
     reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reports_made')

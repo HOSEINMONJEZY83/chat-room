@@ -80,9 +80,11 @@ function checksignup() {
 
 function changeinformation() {
     const formData = new FormData($('#changeinformation')[0]);
+    const csrftoken = $('#changeinformation input[name="csrfmiddlewaretoken"]').val();
     $.ajax({
         url: '/changeinformation',
         type: 'POST',
+        headers: { 'X-CSRFToken': csrftoken },
         data: formData,
         contentType: false,
         processData: false,
@@ -200,6 +202,11 @@ function sendmessages() {
                 $('#border').append(res);
                 $('#messagetext').val('');
                 $('#messagefile').val('');
+
+                if(parent_id) {
+                    $('.reply').removeClass('btn-success').addClass('btn-outline-light');
+                }
+
                 $('#parent_id').val('');
                 var border = document.getElementById('border');
                 border.scrollTop = border.scrollHeight;
@@ -208,8 +215,16 @@ function sendmessages() {
     });
 }
 
-function get_id(id) { 
-    $("#parent_id").val(id);
+function get_id(id,el) {
+    let $btn = $(el);
+    if (!$btn.hasClass('btn-success')) {
+        $('.reply').removeClass('btn-success').addClass('btn-outline-light');
+        $btn.removeClass('btn-outline-light').addClass('btn-success');
+        $("#parent_id").val(id);
+    } else {
+        $btn.removeClass('btn-success').addClass('btn-outline-light');
+        $("#parent_id").val('');
+    }
 }
 
 function report(message_id) {
@@ -225,7 +240,7 @@ function report(message_id) {
         success: function(response) {
             alert(response.message);
         },
-        error: function() {
+        error: function(response) {
             alert(response.error);
         }
     });
