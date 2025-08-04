@@ -59,6 +59,8 @@ python manage.py runserver
 
 - Ability to report messages
 
+- Ability to delete messages
+
 ## ❓ FAQ
 
 #### 📌 What features does your project have?
