@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import JsonResponse , HttpResponseForbidden
 from django.shortcuts import render, redirect, reverse , get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout,login
@@ -8,6 +8,7 @@ from .models import User , Message , Report
 
 def aboutus(request):
     return render(request, 'module/About us.html')
+
 def invalid_path(request,invalid_path):
     return render(request, 'module/Not found.html',status=404)
 
@@ -243,6 +244,16 @@ def report(request):
         message_id = request.POST.get("message_id")
         user = request.user
         message = get_object_or_404(Message, pk=message_id)
+        if Report.objects.filter(reporter=user, message=message).exists():
+            return JsonResponse({"error": "You have already reported this message."}, status=400)
         Report.objects.create(reporter=user, message=message)
         return JsonResponse({"message": "Reported successfully"})
     return JsonResponse({"error": "Invalid request"}, status=400)
+
+@login_required
+def delete(request, pk):
+    if request.method == 'POST':
+        message = get_object_or_404(Message, pk=pk, user=request.user)
+        message.delete()
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'error', 'text': 'Invalid request'})

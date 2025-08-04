@@ -10,6 +10,9 @@
           {{ mes.user.username }}
         {% endif %}
         <small>{{mes.jalali_date_time}}</small>
+        {% if mes.user == request.user %}
+            <button type="submit" class="btn btn-sm btn-outline-danger ms-2" onclick="deleteMessage({{ mes.id }})">🗑️ Delete</button>
+        {% endif %}
         <button class="btn btn-sm btn-outline-light ms-2 reply" onclick="get_id({{ mes.id }},this)">Reply</button>
         <a style="cursor: pointer;" class="ms-2 text-danger text-decoration-none" title="Report this message" onclick="report({{ mes.id }})">🚩</a>
       </h3>

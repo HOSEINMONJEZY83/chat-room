@@ -228,21 +228,85 @@ function get_id(id,el) {
 }
 
 function report(message_id) {
-    if (!confirm("Are you sure you want to report this message?")) {
-        return;
-    }
-    const csrftoken = document.querySelector("meta[name='csrf-token']").content;
-    $.ajax({
-        url: 'report',
-        method: 'POST',
-        headers: { 'X-CSRFToken': csrftoken },
-        data: { message_id: message_id },
-        success: function(response) {
-            alert(response.message);
-        },
-        error: function(response) {
-            alert(response.error);
+    Swal.fire({
+        title: "Are you sure?",
+        text: "Do you want to report this message?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Yes, report it!",
+        cancelButtonText: "Cancel"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const csrftoken = document.querySelector("meta[name='csrf-token']").content;
+            $.ajax({
+                url: 'report',
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken },
+                data: { message_id: message_id },
+                success: function(response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Reported!',
+                        text: response.message
+                    });
+                },
+                error: function(xhr) {
+                    let errorMsg = 'Something went wrong!';
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        errorMsg = xhr.responseJSON.error;
+                    }
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: errorMsg
+                    });
+                }
+            });
         }
     });
 }
 
+
+function deleteMessage(id) {
+    const csrfToken = $('meta[name="csrf-token"]').attr('content');
+
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.post(`/delete/${id}/`, {
+                csrfmiddlewaretoken: csrfToken
+            }).then(res => {
+                if (res.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'Message has been deleted.'
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Failed',
+                        text: res.text
+                    });
+                }
+            }).catch(() => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Something went wrong.'
+                });
+            });
+        }
+    });
+}
