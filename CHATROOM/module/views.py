@@ -1,9 +1,15 @@
-from django.http import JsonResponse , HttpResponseForbidden
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, reverse , get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout,login
 from .forms import LoginForm, RegisterForm, EditProfileModelForm, ChangePasswordForm
 from .models import User , Message , Report
+from rest_framework import status
+from rest_framework.decorators import api_view , permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from drf_spectacular.utils import extend_schema
+from rest_framework.response import Response
+from .serializers import UserSerializer , MessageSerializer , ReportSerializer
 # Create your views here.
 
 def aboutus(request):
@@ -257,3 +263,198 @@ def delete(request, pk):
         message.delete()
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error', 'text': 'Invalid request'})
+
+MAX_AVATAR_SIZE_MB = 2
+ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+@extend_schema(
+    request={
+        'multipart/form-data': {
+            'type': 'object',
+            'properties': {
+                'username': {'type': 'string'},
+                'first_name': {'type': 'string'},
+                'last_name': {'type': 'string'},
+                'email': {'type': 'string', 'format': 'email'},
+                'password': {'type': 'string', 'format': 'password'},
+                'confirm_password': {'type': 'string', 'format': 'password'},
+                'avatar': {'type': 'string', 'format': 'binary'},
+            },
+            'required': ['username', 'first_name' , 'last_name' , 'email', 'password','confirm_password']
+        }
+    }
+)
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
+def user_list_create(request):
+    if request.method == 'GET':
+        if not request.user.is_staff:
+            return Response({'detail': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        password = request.data.get('password')
+        confirm_password = request.data.get('confirm_password')
+        if password != confirm_password:
+            return Response({'detail': 'Passwords do not match.'}, status=status.HTTP_400_BAD_REQUEST)
+        data = request.data.copy()
+        data.pop('confirm_password', None)
+        if User.objects.filter(username=data.get('username')).exists():
+            return Response({'username': ['Username already exists.']}, status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(email=data.get('email')).exists():
+            return Response({'email': ['Email already exists.']}, status=status.HTTP_400_BAD_REQUEST)
+        avatar = request.FILES.get('avatar')
+        if avatar:
+            if avatar.content_type not in ALLOWED_IMAGE_TYPES:
+                return Response({'avatar': ['Invalid image format.']}, status=status.HTTP_400_BAD_REQUEST)
+            if avatar.size > MAX_AVATAR_SIZE_MB * 1024 * 1024:
+                return Response({'avatar': ['Image size too large.']}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = UserSerializer(data=data)
+        if serializer.is_valid():
+            user = serializer.save()
+            user.set_password(password)
+            user.save()
+            response_data = UserSerializer(user).data
+            response_data.pop('password', None)
+            return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@extend_schema(
+    request={
+        'multipart/form-data': {
+            'type': 'object',
+            'properties': {
+                'username': {'type': 'string'},
+                'first_name': {'type': 'string'},
+                'last_name': {'type': 'string'},
+                'email': {'type': 'string', 'format': 'email'},
+                'password': {'type': 'string', 'format': 'password'},
+                'confirm_password': {'type': 'string', 'format': 'password'},
+                'avatar': {'type': 'string', 'format': 'binary'},
+            },
+            'required': ['username', 'first_name' , 'last_name' , 'email', 'password','confirm_password']
+        }
+    }
+)
+@api_view(['GET', 'PUT'])
+def user_detail_update(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    if request.user != user and not request.user.is_staff:
+        return Response({'error': 'You do not have permission to access this user.'}, status=status.HTTP_403_FORBIDDEN)
+    if request.method == 'GET':
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+    elif request.method == 'PUT':
+        data = request.data.copy()
+        avatar = request.FILES.get('avatar')
+        if avatar:
+            if avatar.content_type not in ALLOWED_IMAGE_TYPES:
+                return Response({'avatar': ['Invalid image format.']}, status=status.HTTP_400_BAD_REQUEST)
+            if avatar.size > MAX_AVATAR_SIZE_MB * 1024 * 1024:
+                return Response({'avatar': ['Image size too large.']}, status=status.HTTP_400_BAD_REQUEST)
+            data['avatar'] = avatar
+        password = data.get('password')
+        confirm_password = data.get('confirm_password')
+        if password or confirm_password:
+            if password != confirm_password:
+                return Response(
+                    {'confirm_password': ['Password and confirm password do not match.']},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        serializer = UserSerializer(user, data=data, partial=True)
+        if serializer.is_valid():
+            user = serializer.save()
+            if password:
+                user.set_password(password)
+                user.save()
+            response_data = UserSerializer(user).data
+            response_data.pop('password', None)
+            return Response(response_data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@extend_schema(
+    request={
+        'multipart/form-data': {
+            'type': 'object',
+            'properties': {
+                'message_id': {'type': 'integer'}
+            },
+            'required': ['message_id']
+        }
+    }
+)
+@api_view(['POST'])
+def report_message_api(request):
+    message_id = request.data.get('message_id')
+    if not message_id:
+        return Response({'message_id': ['This field is required.']}, status=status.HTTP_400_BAD_REQUEST)
+    message = get_object_or_404(Message, id=message_id)
+    if Report.objects.filter(reporter=request.user, message=message).exists():
+        return Response({'detail': 'You have already reported this message.'}, status=status.HTTP_400_BAD_REQUEST)
+    serializer = ReportSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save(reporter=request.user, message=message)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@extend_schema(
+    request={
+        'multipart/form-data': {
+            'type': 'object',
+            'properties': {
+                'parent_id': {'type': 'integer'},
+                'content': {'type': 'string'},
+                'image': {'type': 'string', 'format': 'binary'},
+                'audio': {'type': 'string', 'format': 'binary'}
+            }
+        }
+    }
+)  
+@api_view(['GET', 'POST'])
+def message_api(request):
+    if request.method == 'GET':
+        if not request.user.is_staff:
+            return Response({'detail': 'Permission denied.'}, status=403)
+        messages = Message.objects.all().order_by('-timestamp')
+        serializer = MessageSerializer(messages, many=True)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        content = request.data.get('content')
+        image = request.FILES.get('image')
+        audio = request.FILES.get('audio')
+        if not content and not image and not audio:
+            return Response(
+                {"detail": "You must provide content, or an image, or an audio."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        data = {
+            'parent_id': request.data.get('parent_id'),
+            'content': content,
+            'image': image,
+            'audio': audio
+        }
+        if str(data.get('parent_id')) == '0':
+            data.pop('parent_id')
+        serializer = MessageSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@extend_schema(
+    request=MessageSerializer
+)    
+@api_view(['GET', 'DELETE'])
+def message_detail(request, message_id):
+    message = get_object_or_404(Message, id=message_id)
+    if not (request.user.is_staff or message.user == request.user):
+        return Response({'detail': 'Permission denied.'}, status=403)
+    if request.method == 'GET':
+        serializer = MessageSerializer(message)
+        return Response(serializer.data)
+    elif request.method == 'DELETE':
+        message.delete()
+        return Response({'detail': 'Message deleted successfully.'}, status=204)
