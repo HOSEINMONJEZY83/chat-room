@@ -61,6 +61,8 @@ python manage.py runserver
 
 - Ability to delete messages
 
+- This application includes an API
+
 ## ❓ FAQ
 
 #### 📌 What features does your project have?
