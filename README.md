@@ -68,7 +68,7 @@ python manage.py runserver
 #### 📌 What features does your project have?
 
 The project allows users to sign up, log in, and send text, image, and audio messages. Messages are updated live via AJAX
-##### 📌 How are messages displayed in the chat?
+#### 📌 How are messages displayed in the chat?
 
 Messages are displayed live using AJAX, without refreshing the page
 #### 📌 Can each user have a profile picture?
